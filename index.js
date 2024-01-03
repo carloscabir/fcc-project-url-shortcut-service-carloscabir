@@ -6,8 +6,10 @@ const mongoose = require('mongoose');
 const dbConnection = require('./database/dbConnect.js')
 const validateUrl = require('./schemas/shortUrl/url.js')
 const bodyParser = require('body-parser')
+const dns = require("dns");
 
 app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
 dbConnection()
 
@@ -45,10 +47,17 @@ app.post("/api/shorturl", async (req, res) => {
   const { url } = req.body
   const validate = validateUrl({ url })
 
-  if(!validate.success) {
-    return res.json({ error: 'invalid url' })
-  }
+  if(!validate.success) return res.status(404).json({ error: 'invalid url' })
 
+
+  dns.lookup(url, (err, address, family) => { 
+    if (err) {
+      return res.status(404).json({ error: 'invalid url' })
+    }
+    
+    console.log(`The ip address is ${address} and the ip version is ${family}`)
+  })
+  
   try {
     const collectionLength = await UrlModel.countDocuments()
 
@@ -56,7 +65,7 @@ app.post("/api/shorturl", async (req, res) => {
     
     const { original_url, short_url } = newShortUrl
 
-    return res.json({
+    return res.status(200).json({
       original_url,
       short_url
     })
