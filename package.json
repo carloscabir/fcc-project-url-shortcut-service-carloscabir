@@ -18,6 +18,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "eslint": "^8.56.0",
     "nodemon": "^2.0.4"
   }
 }
